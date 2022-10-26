@@ -12,22 +12,21 @@ def extract(url):
     commits = list(repo.iter_commits())
     return commits
 
-def transform(commits):
+def transform(commits, KEY_WORDS):
     coincidencias = []
-    pattern = re.compile(r".{10}private[-.\s]keys.{10}", re.IGNORECASE)
     for commit in commits:
-        coincide = pattern.finditer(commit.message)
-        if coincide:
-            coincidencias.append(coincide)
+        for word in KEY_WORDS:
+            if re.search(word, commit.message, re.IGNORECASE):
+                coincidencias.append(str('Commit: {} - {}'.format(commit.hexsha, commit.message)))
     return coincidencias
 
 def load(coincidencias):
     for i in coincidencias:
-        for j in i:
-            print(j)
+        print(i)
 
 if __name__ == '__main__':
     DIR_REPO = "./skale/skale-manager"
+    KEY_WORDS = ['credentials','password','key'] #,'password','username','key'
     commits  = extract(DIR_REPO)
-    coincidencias = transform(commits)
+    coincidencias = transform(commits, KEY_WORDS)
     load(coincidencias)
