@@ -3,13 +3,12 @@ from git import Repo
 import re, signal, sys, time, pwn, pdb, os
 
 def handler_signal(signal, frame):
-    print('\n\n Out ..........\n')
+    print('\n\n[!] Out ..........\n')
     sys.exit(1)
-signal.signal(signal.SIGINT, handler_signal)
 
 def extract(url):
     repo = Repo(url)
-    commits = list(repo.iter_commits())
+    commits = list(repo.iter_commits('develop'))
     return commits
 
 def transform(commits, KEY_WORDS):
@@ -17,7 +16,7 @@ def transform(commits, KEY_WORDS):
     for commit in commits:
         for word in KEY_WORDS:
             if re.search(word, commit.message, re.IGNORECASE):
-                coincidencias.append(str('Commit: {} - {}'.format(commit.hexsha, commit.message)))
+                coincidencias.append(str(f'Commit: {commit.hexsha} -> {commit.message}'))
     return coincidencias
 
 def load(coincidencias):
@@ -25,8 +24,14 @@ def load(coincidencias):
         print(i)
 
 if __name__ == '__main__':
+
+    signal.signal(signal.SIGINT, handler_signal)
+
     DIR_REPO = "./skale/skale-manager"
     KEY_WORDS = ['credentials','password','key'] #,'password','username','key'
+
     commits  = extract(DIR_REPO)
+
     coincidencias = transform(commits, KEY_WORDS)
+
     load(coincidencias)
